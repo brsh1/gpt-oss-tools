@@ -82,11 +82,6 @@ def mark_searching() -> None:
     _mark_status("Searching the web…", "search")
 
 
-def mark_adjusting_lights() -> None:
-    """Public helper for light tools to mark status as adjusting lights."""
-    _mark_status("Adjusting lights…", "lights")
-
-
 def mark_checking_calendar() -> None:
     _mark_status("Checking your Calendar…", "calendar")
 
@@ -101,9 +96,6 @@ def mark_checking_location() -> None:
 
 def mark_getting_weather() -> None:
     _mark_status("Getting weather…", "weather")
-
-def mark_checking_status() -> None:
-    _mark_status("Checking light status…", "status")
 
 def mark_visiting_website() -> None:
     _mark_status("Reading more...", "website")

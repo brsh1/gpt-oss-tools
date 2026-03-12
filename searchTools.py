@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 from agents import function_tool
 from rich.console import Console
 from statusTools import mark_searching, clear_tool_status, mark_visiting_website

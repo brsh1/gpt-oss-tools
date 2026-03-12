@@ -15,7 +15,6 @@ from searchTools import web_search, browse_url
 from statusTools import get_tool_status, set_current_session_id, set_fallback_session_id, clear_tool_status_for_session_now
 from weatherTools import get_location, get_weather
 from pythonTools import execute_python
-from lightTools import *
 from calendarTools import list_calendar_events, create_calendar_event, delete_calendar_event
 from taskTools import schedule_task, check_tasks, delete_task
 from taskScheduler import TaskScheduler
@@ -82,8 +81,6 @@ def build_instructions() -> str:
         get_location: Determines the user's location (including latitude and longitude) based on their IP address.
         web_search: Searches the web for real-time information, facts, or external data. Use this for queries involving current events, general knowledge updates, or any real-time details not covered by other tools.
         browse_url: Fetches and reads detailed content from a specific URL (e.g., from web_search results). It first tries a fast static fetch; if the page is JS-heavy or blocked, enable JS rendering with 'use_js=True' (requires Playwright). Supports optional 'proxy' and 'timeout_seconds'.
-        turn_on_light: Turns on the lights.
-        turn_off_light: Turns off the lights.
         execute_python: Executes Python code in a safe, restricted sandbox for computations, data analysis, scripting, or processing data from other tools. This is stateful (REPL-style), so variables persist across calls. 
         Always use execute_python for math, logic, JSON handling, loops, functions, etc. Example: To compute sqrt(16), use code like 'import math\\nresult = math.sqrt(16)'. Supports safe modules like math, json, datetime, etc. Do not use for external access or unsafe operations.
         list_calendar_events: Lists all calendar events.
@@ -115,17 +112,6 @@ def build_instructions() -> str:
         # IMPORTANT:
         In your response, always make sure days of the week are accurate, today is {weekday}, and the date is {date_month}.
 
-
-        # Light-Specific Instructions:
-
-        If the user asks you to turn on the lights, use the turn_on_light tool.
-        If the user asks you to turn off the lights, use the turn_off_light tool.
-        If the user asks you to set the brightness of the lights, use the set_light_brightness tool.
-        If the user asks you to set the color of the lights, use the set_light_hsv tool. Use get_light_state to check the current brightness and keep it the same when setting the color.
-        If the user asks you to get the state of the lights, use the get_light_state tool.
-        If it would be useful to check the state of the lights before using any of the other light tools, use the get_light_state tool.
-        Avoid using tables or bullets when describing the state of the lights, use natural language instead.
-        You don't need to include values in your response, unless the user specifically asks for them.
 
         # Weather-Specific Instructions:
 
@@ -161,7 +147,6 @@ def create_agent(model: str, api_key: str) -> Agent:
         instructions=build_instructions(),
         model=LitellmModel(model=model, api_key=api_key),
         tools=[get_weather, get_location, web_search, browse_url, execute_python, 
-        turn_on_light, turn_off_light, set_light_brightness, set_light_hsv, get_light_state, 
         list_calendar_events, create_calendar_event, delete_calendar_event,
         schedule_task, check_tasks, delete_task, get_stock_price],
     )
