@@ -8,7 +8,6 @@ google-auth-oauthlib
 playwright
 pylatexenc
 python-dotenv
-python-kasa
 pytz
 requests
 RestrictedPython
@@ -16,4 +15,4 @@ rich
 sympy
 termcolor
 uvicorn
-backports.zoneinfo
+yfinance
