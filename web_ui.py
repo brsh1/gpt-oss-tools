@@ -1068,7 +1068,7 @@ body.gradient-background::after {
       }
     }
 
-    // Status polling to show activity shimmer (e.g., "Searching…", "Adjusting lights…") when tools are active
+    // Status polling to show activity shimmer (e.g., "Searching…", "Checking weather…") when tools are active
     let _statusTimer = null;
     let _statusTarget = null; // the current typing bubble being updated
     function _setTypingStatus(el, statusData) {
