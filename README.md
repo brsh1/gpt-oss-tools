@@ -46,9 +46,15 @@ python generateToken.py
 ```
 
 ### 5. Launch Iris
-- **CLI Mode:**
+Iris can be run as an interactive chat, a single-shot command, or a web UI. It does **not** need to run in the background; tasks are checked whenever you launch the assistant.
+
+- **Interactive CLI:**
   ```bash
   python gpt-oss-tools.py --model iris
+  ```
+- **Single-shot Command (On-demand):**
+  ```bash
+  python gpt-oss-tools.py --model iris --query "What is the weather in NYC?"
   ```
 - **Web UI:**
   ```bash

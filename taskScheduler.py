@@ -170,36 +170,10 @@ def _next_run_after(start_utc: datetime, rrule: Optional[Dict[str, Any]], after:
 
 
 class TaskScheduler:
-    def __init__(self, check_interval: int = DEFAULT_CHECK_INTERVAL_SECONDS, due_tolerance: int = DEFAULT_DUE_TOLERANCE_SECONDS) -> None:
-        self.check_interval = check_interval
+    def __init__(self, due_tolerance: int = DEFAULT_DUE_TOLERANCE_SECONDS) -> None:
         self.due_tolerance = due_tolerance
-        self._task: Optional[asyncio.Task] = None
-        self._stopped = asyncio.Event()
 
-    async def start(self, inject_callback: Callable[[str, str], "asyncio.Future"]) -> None:
-        if self._task and not self._task.done():
-            return
-        self._stopped.clear()
-        self._task = asyncio.create_task(self._run_loop(inject_callback))
-
-    async def stop(self) -> None:
-        if self._task and not self._task.done():
-            self._stopped.set()
-            self._task.cancel()
-            try:
-                await self._task
-            except Exception:
-                pass
-
-    async def _run_loop(self, inject_callback: Callable[[str, str], "asyncio.Future"]) -> None:
-        while not self._stopped.is_set():
-            try:
-                await self._tick(inject_callback)
-            except Exception:
-                pass
-            await asyncio.sleep(self.check_interval)
-
-    async def _tick(self, inject_callback: Callable[[str, str], "asyncio.Future"]) -> None:
+    async def run_due_tasks(self, inject_callback: Callable[[str, str], Any]) -> None:
         tasks = load_tasks()
         changed = False
         now = datetime.now(timezone.utc)

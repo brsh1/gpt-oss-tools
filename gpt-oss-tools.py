@@ -49,7 +49,7 @@ def _is_ollama_tool_template_error(exc: Exception) -> bool:
         "/api/chat" in text and "500" in text and "Ollama" in text
     )
 
-async def main(model: str, api_key: str):
+async def main(model: str, api_key: str, query: str = None):
     if os.getenv("LITELLM_DEBUG", "0") in ("1", "true", "True"):
         try:
             import litellm
@@ -150,7 +150,7 @@ async def main(model: str, api_key: str):
     history = []
     print(colored("Chat started\ntype 'bye' to quit", "dark_grey"))
 
-    # Start a background scheduler in CLI mode that injects into this same session/history
+    # On-demand task check at startup
     scheduler = TaskScheduler()
 
     async def _inject_cli_message(session_id: str, message: str):
@@ -172,7 +172,33 @@ async def main(model: str, api_key: str):
         history.append(f"User: {message}")
         history.append(f"Assistant: {response}")
 
-    await scheduler.start(_inject_cli_message)
+    await scheduler.run_due_tasks(_inject_cli_message)
+
+    if query:
+        full_prompt = query
+        try:
+            result = await Runner.run(agent, full_prompt, max_turns=20)
+        except Exception as e:
+            if _is_ollama_tool_template_error(e):
+                fallback_agent = Agent(
+                    name="Assistant",
+                    instructions=instructions_text,
+                    model=LitellmModel(model=model, api_key=api_key),
+                    tools=[],
+                )
+                result = await Runner.run(fallback_agent, full_prompt, max_turns=1)
+            else:
+                raise
+        response = result.final_output
+        processed_response = latex_converter.latex_to_text(response)
+        processed_response = fix_markdown_tables(processed_response)
+        processed_response = linkify_bare_urls(processed_response)
+        text_without_tables, parsed_tables = extract_markdown_tables(processed_response)
+        rich_tables = build_rich_tables(parsed_tables) if parsed_tables else []
+        renderable = Group(Markdown(text_without_tables), *rich_tables) if rich_tables else Markdown(text_without_tables)
+        print()
+        console.print(Panel(renderable, title="Agent", border_style="magenta", style="bold magenta"))
+        return
 
     while True:
         prompt = input(colored("\nYou: ", "blue"))
@@ -223,6 +249,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GPT OSS Tools - CLI and Web UI")
     parser.add_argument("--model", type=str, default="ollama_chat/gpt-oss:20b", help="Model identifier")
     parser.add_argument("--api-key", type=str, default="ollama", help="API key or provider selector (e.g., 'ollama')")
+    parser.add_argument("--query", type=str, help="Run a single query and exit")
     parser.add_argument("--web", action="store_true", help="Launch the dark-themed web UI instead of CLI")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Host for web UI")
     parser.add_argument("--port", type=int, default=7860, help="Port for web UI")
@@ -238,4 +265,4 @@ if __name__ == "__main__":
             raise
         run_web_ui(args.model, args.api_key, host=args.host, port=args.port)
     else:
-        asyncio.run(main(args.model, args.api_key))
+        asyncio.run(main(args.model, args.api_key, query=args.query))

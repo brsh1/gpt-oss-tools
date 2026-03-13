@@ -218,10 +218,10 @@ def create_app() -> FastAPI:
         return {"ok": True}
 
     @app.on_event("startup")
-    async def _start_scheduler():
-        # Start background scheduler to check and run due tasks
+    async def _on_startup():
+        # Check for due tasks once on startup
         app.state.scheduler = TaskScheduler()
-        await app.state.scheduler.start(_inject_message)
+        await app.state.scheduler.run_due_tasks(_inject_message)
 
     @app.get("/api/status")
     async def status_endpoint(session_id: str = ""):
